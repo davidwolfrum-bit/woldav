@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Woldav</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- LOCK SCREEN -->
+  <div id="lockScreen" class="screen">
+    <div class="lock-logo">
+      <div class="lock-icon">🔐</div>
+      <h1>Woldav</h1>
+      <p>SECURE PASSWORD MANAGER</p>
+    </div>
+
+    <div class="lock-card">
+      <div class="lock-tabs">
+        <button class="lock-tab active" id="tabUnlock">Unlock</button>
+        <button class="lock-tab" id="tabSetup">First Setup</button>
+      </div>
+
+      <!-- UNLOCK -->
+      <div class="tab-panel active" id="panelUnlock">
+        <div class="field">
+          <label>Master Password</label>
+          <input type="password" id="unlockPass" placeholder="Enter master password" autocomplete="current-password" />
+        </div>
+        <div class="field">
+          <label>GitHub Token</label>
+          <input type="password" id="unlockToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+          <div class="hint">Only held in memory. Cleared when browser closes.</div>
+        </div>
+        <button class="btn btn-accent" id="unlockBtn">Unlock Vault</button>
+        <div class="err-msg" id="unlockErr"></div>
+      </div>
+
+      <!-- SETUP -->
+      <div class="tab-panel" id="panelSetup">
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-text">Go to <strong>github.com/settings/tokens</strong> → Generate new token (classic) → check only <strong>gist</strong> → No expiration → copy it.</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-text">Pick a strong master password (10+ chars). <strong>Cannot be recovered if lost.</strong></div>
+          </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>Master Password</label>
+          <input type="password" id="setupPass" placeholder="Strong master password" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <input type="password" id="setupPass2" placeholder="Repeat master password" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label>GitHub Token</label>
+          <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+        </div>
+        <button class="btn btn-accent" id="setupBtn">Create Vault</button>
+        <div class="err-msg" id="setupErr"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VAULT SCREEN -->
+  <div id="vaultScreen" class="screen hidden">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-logo">
+        <div class="topbar-icon">🔐</div>
+        <div>
+          <h1>Woldav</h1>
+          <span>Password Manager</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="syncBtn" title="Sync">↻</button>
+        <button class="icon-btn danger" id="lockBtn" title="Lock">⏻</button>
+      </div>
+    </div>
+
+    <!-- SYNC BAR -->
+    <div class="sync-bar">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncText">Ready</span>
+      <button class="sync-btn" id="syncNowBtn">Sync</button>
+    </div>
+
+    <!-- ADD ENTRY -->
+    <div class="card">
+      <div class="card-title">Add New Entry</div>
+      <div class="field">
+        <label>Site / App</label>
+        <input type="url" id="inSite" placeholder="https://example.com" />
+      </div>
+      <div class="field">
+        <label>Username or Email</label>
+        <input type="text" id="inUser" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="inPass" placeholder="••••••••••••" />
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      </div>
+      <button class="btn btn-accent" id="addBtn">+ Save Entry</button>
+    </div>
+
+    <!-- ENTRIES -->
+    <div class="card">
+      <div class="card-title">
+        Saved Entries
+        <span class="count-badge" id="countBadge">0</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Search entries…" />
+      </div>
+      <ul id="entryList"></ul>
+      <div class="empty-state" id="emptyState">
+        <div class="e-icon">🗄️</div>
+        <p>No entries yet.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
