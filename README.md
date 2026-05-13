@@ -18,7 +18,7 @@ A secure, open-source password manager that runs entirely in your browser. No se
 
 ## Use as a Web App (any device, no install)
 
-Visit: `https://YOURUSERNAME.github.io/woldav`
+Visit: `https://davidwolfrum-bit.github.io/woldav`
 
 That's it. Works on any computer, phone, or tablet with a browser.
 
@@ -28,11 +28,11 @@ That's it. Works on any computer, phone, or tablet with a browser.
 
 1. Clone or download this repo
    ```
-   git clone https://github.com/YOURUSERNAME/woldav.git
+   git clone https://github.com/davidwolfrum-bit/woldav.git
    ```
 2. Open Chrome → go to `chrome://extensions`
 3. Enable **Developer mode** (top right)
-4. Click **Load unpacked** → select the `woldav` folder
+4. Click **Load unpacked** → select the 'WoldavpmEXTENSION' folder
 
 ---
 
