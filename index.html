@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Woldav</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── RESET & VARS ── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:           #07070d;
+      --bg-panel:     #0f0f18;
+      --bg-card:      #13131e;
+      --bg-input:     rgba(255,255,255,0.055);
+      --border:       rgba(255,255,255,0.07);
+      --border-lit:   rgba(91,245,176,0.3);
+      --accent:       #5bf5b0;
+      --accent-dim:   rgba(91,245,176,0.12);
+      --accent-glow:  rgba(91,245,176,0.35);
+      --cyan:         #3ecfff;
+      --danger:       #ff4f6d;
+      --danger-dim:   rgba(255,79,109,0.12);
+      --text:         #eeeef8;
+      --text-2:       #6e6e8a;
+      --text-3:       #35354a;
+      --r-sm:         8px;
+      --r-md:         14px;
+      --r-lg:         20px;
+      --ease:         cubic-bezier(0.4,0,0.2,1);
+      --spring:       cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* Glow orb */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(91,245,176,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+    }
+
+    .screen.hidden {
+      opacity: 0; pointer-events: none; transform: translateY(12px);
+    }
+
+    /* ── LOCK SCREEN ── */
+    .lock-box {
+      width: 100%; max-width: 400px;
+      animation: riseIn 0.6s var(--spring) forwards;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .lock-logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .lock-icon {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      border-radius: 18px;
+      font-size: 28px;
+      margin-bottom: 16px;
+      animation: iconFloat 4s ease-in-out infinite;
+      box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(62,207,255,0.1);
+    }
+
+    @keyframes iconFloat {
+      0%,100% { transform: translateY(0); box-shadow: 0 0 40px var(--accent-glow); }
+      50%      { transform: translateY(-6px); box-shadow: 0 12px 50px var(--accent-glow), 0 0 80px rgba(62,207,255,0.15); }
+    }
+
+    .lock-logo h1 {
+      font-size: 32px; font-weight: 800; letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .lock-logo p {
+      font-size: 12px; font-family: 'DM Mono', monospace;
+      color: var(--text-2); letter-spacing: 1px; margin-top: 4px;
+    }
+
+    .lock-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 28px;
+      position: relative; overflow: hidden;
+    }
+
+    .lock-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(91,245,176,0.4), transparent);
+    }
+
+    .lock-tabs {
+      display: flex; gap: 4px;
+      background: var(--bg-input);
+      border-radius: var(--r-sm);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .lock-tab {
+      flex: 1; padding: 8px;
+      border: none; border-radius: 6px;
+      background: transparent;
+      color: var(--text-2);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+
+    .lock-tab.active {
+      background: var(--bg-panel);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── INPUTS ── */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 10px; font-family: 'DM Mono', monospace;
+      color: var(--text-2); letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 7px;
+      transition: color 0.2s;
+    }
+
+    .field:focus-within label { color: var(--accent); }
+
+    .field input {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--border-lit);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 0 3px rgba(91,245,176,0.07);
+    }
+
+    .field input::placeholder { color: var(--text-3); }
+
+    .hint {
+      font-size: 11px; font-family: 'DM Mono', monospace;
+      color: var(--text-2); margin-top: 6px; line-height: 1.5;
+    }
+
+    .hint a { color: var(--accent); text-decoration: none; }
+    .hint a:hover { text-decoration: underline; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      width: 100%; padding: 12px 16px;
+      border: none; border-radius: var(--r-sm);
+      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.4px; cursor: pointer;
+      transition: all 0.2s var(--ease);
+      position: relative; overflow: hidden;
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--accent), #3de8a0);
+      color: #07070d;
+      box-shadow: 0 4px 24px rgba(91,245,176,0.25);
+      margin-top: 8px;
+    }
+
+    .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(91,245,176,0.4); }
+    .btn-accent:active { transform: translateY(0); }
+    .btn-accent:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      font-size: 12px;
+    }
+
+    .btn-ghost:hover { border-color: var(--border-lit); color: var(--text); }
+
+    .ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transform: scale(0);
+      animation: rippleAnim 0.5s linear forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+    /* error message */
+    .err-msg {
+      font-size: 12px; font-family: 'DM Mono', monospace;
+      color: var(--danger); margin-top: 10px; text-align: center;
+      min-height: 18px;
+      transition: opacity 0.2s;
+    }
+
+    /* ── VAULT SCREEN ── */
+    #vaultScreen {
+      align-items: flex-start;
+      overflow-y: auto;
+    }
+
+    .vault-wrap {
+      width: 100%; max-width: 540px;
+      margin: 0 auto;
+      padding: 24px 0 48px;
+      animation: riseIn 0.5s var(--spring) forwards;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px;
+      padding: 0 4px;
+    }
+
+    .topbar-logo {
+      display: flex; align-items: center; gap: 10px; flex: 1;
+    }
+
+    .topbar-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 20px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .topbar-logo h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
+    .topbar-logo span {
+      font-size: 10px; font-family: 'DM Mono', monospace;
+      color: var(--accent); letter-spacing: 0.5px; display: block;
+    }
+
+    .topbar-actions { display: flex; gap: 8px; }
+
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-2); font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s var(--ease);
+    }
+
+    .icon-btn:hover { border-color: var(--border-lit); color: var(--accent); background: var(--accent-dim); }
+    .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+
+    /* ── SYNC STATUS ── */
+    .sync-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      margin-bottom: 20px;
+      font-size: 11px; font-family: 'DM Mono', monospace;
+      color: var(--text-2);
+    }
+
+    .sync-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text-3); flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .sync-dot.synced { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .sync-dot.syncing { background: var(--cyan); animation: pulse 1s ease-in-out infinite; }
+    .sync-dot.error { background: var(--danger); }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .sync-text { flex: 1; }
+    .sync-btn {
+      padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-2);
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .sync-btn:hover { border-color: var(--border-lit); color: var(--accent); }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      position: relative; overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(91,245,176,0.25), transparent);
+    }
+
+    .card-title {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      width: 3px; height: 3px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 6px var(--accent);
+    }
+
+    /* ── ADD ENTRY FORM ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .strength-bar {
+      height: 2px; border-radius: 2px;
+      background: var(--border); margin-top: 8px; overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%; border-radius: 2px; width: 0%;
+      transition: width 0.4s var(--ease), background 0.4s var(--ease);
+    }
+
+    /* ── PASSWORD LIST ── */
+    .search-wrap { position: relative; margin-bottom: 14px; }
+
+    .search-wrap::before {
+      content: '⌕';
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3); font-size: 16px; pointer-events: none;
+    }
+
+    .search-wrap input { padding-left: 36px; }
+
+    .count-badge {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--accent); background: var(--accent-dim);
+      border: 1px solid rgba(91,245,176,0.18);
+      border-radius: 20px; padding: 2px 9px;
+    }
+
+    ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+    li {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 13px 15px;
+      display: flex; align-items: center; gap: 12px;
+      transition: all 0.2s var(--ease);
+      position: relative; overflow: hidden;
+      animation: listIn 0.3s var(--ease) both;
+    }
+
+    @keyframes listIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    li::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+      background: var(--accent); transform: scaleY(0);
+      transition: transform 0.2s var(--ease);
+      border-radius: 0 2px 2px 0;
+    }
+
+    li:hover { border-color: rgba(91,245,176,0.2); background: rgba(255,255,255,0.04); transform: translateX(3px); }
+    li:hover::before { transform: scaleY(1); }
+
+    .li-avatar {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: var(--accent-dim);
+      border: 1px solid rgba(91,245,176,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; color: var(--accent);
+    }
+
+    .li-info { flex: 1; min-width: 0; }
+
+    .li-site {
+      font-size: 13px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .li-user {
+      font-size: 11px; font-family: 'DM Mono', monospace;
+      color: var(--text-2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .li-actions {
+      display: flex; gap: 5px; flex-shrink: 0;
+      opacity: 0; transition: opacity 0.15s;
+    }
+
+    li:hover .li-actions { opacity: 1; }
+
+    .li-btn {
+      width: 28px; height: 28px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-input); color: var(--text-2);
+      cursor: pointer; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .li-btn:hover { background: var(--accent-dim); border-color: var(--border-lit); color: var(--accent); transform: scale(1.1); }
+    .li-btn.del:hover { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+
+    .empty-state {
+      text-align: center; padding: 32px 16px; color: var(--text-3);
+    }
+
+    .empty-state .e-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.35; }
+    .empty-state p { font-size: 12px; font-family: 'DM Mono', monospace; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: var(--r-md);
+      padding: 11px 20px;
+      font-size: 12px; font-family: 'DM Mono', monospace;
+      color: var(--accent);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px var(--accent-glow);
+      opacity: 0; white-space: nowrap; z-index: 999;
+      transition: all 0.35s var(--spring);
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(7,7,13,0.85);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      width: 100%; max-width: 420px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 28px;
+      transform: scale(0.94) translateY(12px);
+      transition: transform 0.3s var(--spring);
+      position: relative; overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal { transform: scale(1) translateY(0); }
+
+    .modal::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(91,245,176,0.4), transparent);
+    }
+
+    .modal h2 {
+      font-size: 16px; font-weight: 700; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { margin-top: 0; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── SETUP STEPS ── */
+    .setup-step {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+
+    .setup-step:last-child { border-bottom: none; }
+
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      background: var(--accent-dim); border: 1px solid var(--border-lit);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--accent);
+    }
+
+    .step-text { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text-2); line-height: 1.6; }
+    .step-text strong { color: var(--text); font-weight: 600; }
+    .step-text a { color: var(--accent); text-decoration: none; }
+    .step-text a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 500px) {
+      .form-row { grid-template-columns: 1fr; }
+      .vault-wrap { padding: 16px 0 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOCK SCREEN ── -->
+  <div class="screen" id="lockScreen">
+    <div class="lock-box">
+      <div class="lock-logo">
+        <div class="lock-icon">🔐</div>
+        <h1>Woldav</h1>
+        <p>SECURE PASSWORD MANAGER</p>
+      </div>
+
+      <div class="lock-card">
+        <div class="lock-tabs">
+          <button class="lock-tab active" id="tabUnlock">Unlock</button>
+          <button class="lock-tab" id="tabSetup">First Setup</button>
+        </div>
+
+        <!-- UNLOCK PANEL -->
+        <div class="tab-panel active" id="panelUnlock">
+          <div class="field">
+            <label>Master Password</label>
+            <input type="password" id="unlockPass" placeholder="Enter your master password" autocomplete="current-password" />
+          </div>
+          <div class="field">
+            <label>GitHub Token</label>
+            <input type="password" id="unlockToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+            <div class="hint">Not stored anywhere. Used only this session to sync your vault.</div>
+          </div>
+          <button class="btn btn-accent" id="unlockBtn">Unlock Vault</button>
+          <div class="err-msg" id="unlockErr"></div>
+        </div>
+
+        <!-- SETUP PANEL -->
+        <div class="tab-panel" id="panelSetup">
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+              Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens</a> → Generate new token (classic) → check only <strong>gist</strong> scope → copy the token.
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+              Choose a strong <strong>master password</strong>. This encrypts your vault locally — GitHub never sees it. <strong>Don't lose it.</strong>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-text">Fill in the fields below and click Create Vault. A private Gist will be created automatically.</div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <div class="field">
+              <label>Choose Master Password</label>
+              <input type="password" id="setupPass" placeholder="Strong master password" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label>Confirm Master Password</label>
+              <input type="password" id="setupPass2" placeholder="Repeat master password" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label>GitHub Token</label>
+              <input type="password" id="setupToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+            </div>
+            <button class="btn btn-accent" id="setupBtn">Create Vault</button>
+            <div class="err-msg" id="setupErr"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VAULT SCREEN ── -->
+  <div class="screen hidden" id="vaultScreen">
+    <div class="vault-wrap">
+
+      <!-- TOP BAR -->
+      <div class="topbar">
+        <div class="topbar-logo">
+          <div class="topbar-icon">🔐</div>
+          <div>
+            <h1>Woldav</h1>
+            <span>Password Manager</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="syncBtn" title="Sync now">↻</button>
+          <button class="icon-btn danger" id="lockBtn" title="Lock vault">⏻</button>
+        </div>
+      </div>
+
+      <!-- SYNC STATUS -->
+      <div class="sync-bar">
+        <div class="sync-dot" id="syncDot"></div>
+        <span class="sync-text" id="syncText">Not synced yet</span>
+        <button class="sync-btn" id="syncNowBtn">Sync now</button>
+      </div>
+
+      <!-- ADD ENTRY -->
+      <div class="card">
+        <div class="card-title">Add New Entry</div>
+        <div class="form-row">
+          <div class="field">
+            <label>Site / App</label>
+            <input type="url" id="inSite" placeholder="https://example.com" />
+          </div>
+          <div class="field">
+            <label>Username or Email</label>
+            <input type="text" id="inUser" placeholder="you@example.com" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="inPass" placeholder="••••••••••••" />
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        </div>
+        <button class="btn btn-accent" id="addBtn">+ Save Entry</button>
+      </div>
+
+      <!-- ENTRIES -->
+      <div class="card">
+        <div class="card-title">
+          Saved Entries
+          <span class="count-badge" id="countBadge">0</span>
+        </div>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="Search entries…" />
+        </div>
+        <ul id="entryList"></ul>
+        <div class="empty-state" id="emptyState">
+          <div class="e-icon">🗄️</div>
+          <p>No entries yet. Add one above.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── SHOW PASSWORD MODAL ── -->
+  <div class="modal-backdrop" id="showModal">
+    <div class="modal">
+      <h2>🔑 Password</h2>
+      <div class="field">
+        <label>Site</label>
+        <input type="text" id="modalSite" readonly />
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="modalUser" readonly />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="text" id="modalPass" readonly />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-accent" id="modalCopyBtn">Copy Password</button>
+        <button class="btn btn-ghost" id="modalCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════
+    //  CRYPTO  (AES-256-GCM + PBKDF2)
+    // ══════════════════════════════════════════════
+
+    async function deriveKey(password, salt) {
+      const raw = await crypto.subtle.importKey(
+        'raw', new TextEncoder().encode(password),
+        'PBKDF2', false, ['deriveKey']
+      );
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
+        raw,
+        { name: 'AES-GCM', length: 256 },
+        false, ['encrypt', 'decrypt']
+      );
+    }
+
+    async function encryptVault(data, key) {
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const buf = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv }, key,
+        new TextEncoder().encode(JSON.stringify(data))
+      );
+      return {
+        iv:   Array.from(iv),
+        data: Array.from(new Uint8Array(buf))
+      };
+    }
+
+    async function decryptVault(payload, key) {
+      const buf = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(payload.iv) }, key,
+        new Uint8Array(payload.data)
+      );
+      return JSON.parse(new TextDecoder().decode(buf));
+    }
+
+    // ══════════════════════════════════════════════
+    //  GITHUB GIST SYNC
+    // ══════════════════════════════════════════════
+
+    const GIST_FILENAME = 'woldav_vault.enc';
+
+    async function gistGet(token, gistId) {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (!r.ok) throw new Error('Failed to fetch gist');
+      const j = await r.json();
+      return JSON.parse(j.files[GIST_FILENAME].content);
+    }
+
+    async function gistUpdate(token, gistId, payload) {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload) } } })
+      });
+      if (!r.ok) throw new Error('Failed to update gist');
+    }
+
+    async function gistCreate(token) {
+      const r = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'Woldav encrypted vault',
+          public: false,
+          files: { [GIST_FILENAME]: { content: JSON.stringify({ init: true }) } }
+        })
+      });
+      if (!r.ok) throw new Error('Failed to create gist');
+      const j = await r.json();
+      return j.id;
+    }
+
+    // ══════════════════════════════════════════════
+    //  STATE
+    // ══════════════════════════════════════════════
+
+    let sessionKey   = null;   // CryptoKey — in memory only
+    let sessionToken = null;   // GitHub token — in memory only
+    let gistId       = null;   // stored in localStorage (not sensitive)
+    let entries      = [];
+    let lastSynced   = null;
+
+    // ══════════════════════════════════════════════
+    //  HELPERS
+    // ══════════════════════════════════════════════
+
+    function $(id) { return document.getElementById(id); }
+
+    let toastTimer;
+    function toast(msg, color) {
+      const el = $('toast');
+      el.textContent = msg;
+      el.style.borderColor = color || 'var(--accent)';
+      el.style.color = color || 'var(--accent)';
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    function ripple(btn, e) {
+      const sp = document.createElement('span');
+      sp.className = 'ripple';
+      const r = btn.getBoundingClientRect();
+      const sz = Math.max(r.width, r.height);
+      Object.assign(sp.style, {
+        width: sz+'px', height: sz+'px',
+        left: (e.clientX - r.left - sz/2)+'px',
+        top:  (e.clientY - r.top  - sz/2)+'px'
+      });
+      btn.appendChild(sp);
+      setTimeout(() => sp.remove(), 500);
+    }
+
+    function setSyncStatus(state, text) {
+      const dot = $('syncDot');
+      dot.className = 'sync-dot' + (state ? ' '+state : '');
+      $('syncText').textContent = text;
+    }
+
+    function getLetter(site) {
+      try { return new URL(site).hostname.replace('www.','')[0].toUpperCase(); }
+      catch { return (site[0]||'?').toUpperCase(); }
+    }
+
+    function getDomain(site) {
+      try { return new URL(site).hostname.replace('www.',''); }
+      catch { return site; }
+    }
+
+    function strengthColor(score) {
+      return ['#ff4f6d','#ff9640','#f5e05b','#5bf5b0'][score];
+    }
+
+    // ══════════════════════════════════════════════
+    //  VAULT LOAD / SAVE
+    // ══════════════════════════════════════════════
+
+    async function pushVault() {
+      if (!sessionToken || !gistId) return;
+      setSyncStatus('syncing', 'Syncing…');
+      try {
+        const payload = await encryptVault(entries, sessionKey);
+        await gistUpdate(sessionToken, gistId, payload);
+        lastSynced = new Date();
+        setSyncStatus('synced', 'Synced · ' + lastSynced.toLocaleTimeString());
+      } catch(err) {
+        setSyncStatus('error', 'Sync failed — ' + err.message);
+        toast('Sync failed', 'var(--danger)');
+      }
+    }
+
+    async function pullVault() {
+      setSyncStatus('syncing', 'Loading vault…');
+      try {
+        const payload = await gistGet(sessionToken, gistId);
+        if (payload.init) {
+          entries = [];
+        } else {
+          entries = await decryptVault(payload, sessionKey);
+        }
+        lastSynced = new Date();
+        setSyncStatus('synced', 'Synced · ' + lastSynced.toLocaleTimeString());
+        renderEntries(entries);
+      } catch(err) {
+        setSyncStatus('error', 'Load failed — check your token/password');
+        toast('Could not load vault', 'var(--danger)');
+      }
+    }
+
+    // ══════════════════════════════════════════════
+    //  RENDER
+    // ══════════════════════════════════════════════
+
+    function renderEntries(list) {
+      const ul = $('entryList');
+      const empty = $('emptyState');
+      $('countBadge').textContent = entries.length;
+      ul.innerHTML = '';
+      empty.style.display = list.length ? 'none' : 'block';
+
+      list.forEach((e, i) => {
+        const li = document.createElement('li');
+        li.style.animationDelay = `${i * 0.04}s`;
+
+        const av = document.createElement('div');
+        av.className = 'li-avatar';
+        av.textContent = getLetter(e.site);
+
+        const info = document.createElement('div');
+        info.className = 'li-info';
+        info.innerHTML = `<div class="li-site">${getDomain(e.site)}</div><div class="li-user">${e.user}</div>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'li-actions';
+
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'li-btn'; viewBtn.title = 'View'; viewBtn.textContent = '👁';
+        viewBtn.addEventListener('click', ev => { ev.stopPropagation(); openModal(e); });
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'li-btn'; copyBtn.title = 'Copy password'; copyBtn.textContent = '⎘';
+        copyBtn.addEventListener('click', ev => {
+          ev.stopPropagation();
+          navigator.clipboard.writeText(e.pass).then(() => toast('📋 Password copied'));
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'li-btn del'; delBtn.title = 'Delete'; delBtn.textContent = '✕';
+        delBtn.addEventListener('click', ev => {
+          ev.stopPropagation();
+          entries = entries.filter(x => x.id !== e.id);
+          renderEntries(entries);
+          pushVault();
+          toast('🗑 Entry deleted');
+        });
+
+        actions.append(viewBtn, copyBtn, delBtn);
+        li.append(av, info, actions);
+        ul.appendChild(li);
+      });
+    }
+
+    // ══════════════════════════════════════════════
+    //  MODAL
+    // ══════════════════════════════════════════════
+
+    function openModal(e) {
+      $('modalSite').value = e.site;
+      $('modalUser').value = e.user;
+      $('modalPass').value = e.pass;
+      $('showModal').classList.add('open');
+    }
+
+    $('modalCloseBtn').addEventListener('click', () => $('showModal').classList.remove('open'));
+    $('showModal').addEventListener('click', ev => { if (ev.target === $('showModal')) $('showModal').classList.remove('open'); });
+    $('modalCopyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText($('modalPass').value).then(() => toast('📋 Copied'));
+    });
+
+    // ══════════════════════════════════════════════
+    //  LOCK / UNLOCK
+    // ══════════════════════════════════════════════
+
+    function showVault() {
+      $('lockScreen').classList.add('hidden');
+      $('vaultScreen').classList.remove('hidden');
+    }
+
+    function showLock() {
+      $('vaultScreen').classList.add('hidden');
+      $('lockScreen').classList.remove('hidden');
+      sessionKey = null; sessionToken = null; entries = [];
+    }
+
+    $('lockBtn').addEventListener('click', () => { showLock(); toast('Vault locked'); });
+
+    // Tabs
+    $('tabUnlock').addEventListener('click', () => {
+      $('tabUnlock').classList.add('active'); $('tabSetup').classList.remove('active');
+      $('panelUnlock').classList.add('active'); $('panelSetup').classList.remove('active');
+    });
+    $('tabSetup').addEventListener('click', () => {
+      $('tabSetup').classList.add('active'); $('tabUnlock').classList.remove('active');
+      $('panelSetup').classList.add('active'); $('panelUnlock').classList.remove('active');
+    });
+
+    // UNLOCK
+    $('unlockBtn').addEventListener('click', async function(e) {
+      ripple(this, e);
+      const pass  = $('unlockPass').value;
+      const token = $('unlockToken').value.trim();
+      const err   = $('unlockErr');
+      err.textContent = '';
+
+      if (!pass || !token) { err.textContent = 'Both fields are required.'; return; }
+
+      gistId = localStorage.getItem('woldav_gist_id');
+      if (!gistId) { err.textContent = 'No vault found. Use First Setup tab.'; return; }
+
+      this.disabled = true; this.textContent = 'Unlocking…';
+      try {
+        const saltHex = localStorage.getItem('woldav_salt');
+        const salt = new Uint8Array(saltHex.match(/.{2}/g).map(h => parseInt(h,16)));
+        sessionKey   = await deriveKey(pass, salt);
+        sessionToken = token;
+        showVault();
+        await pullVault();
+      } catch(err2) {
+        err.textContent = 'Wrong password or token.';
+      } finally {
+        this.disabled = false; this.textContent = 'Unlock Vault';
+      }
+    });
+
+    // SETUP
+    $('setupBtn').addEventListener('click', async function(e) {
+      ripple(this, e);
+      const pass   = $('setupPass').value;
+      const pass2  = $('setupPass2').value;
+      const token  = $('setupToken').value.trim();
+      const err    = $('setupErr');
+      err.textContent = '';
+
+      if (!pass || !token)        { err.textContent = 'All fields are required.'; return; }
+      if (pass !== pass2)         { err.textContent = 'Passwords do not match.'; return; }
+      if (pass.length < 10)       { err.textContent = 'Master password must be at least 10 characters.'; return; }
+
+      this.disabled = true; this.textContent = 'Creating vault…';
+      try {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        localStorage.setItem('woldav_salt', Array.from(salt).map(b => b.toString(16).padStart(2,'0')).join(''));
+
+        sessionKey   = await deriveKey(pass, salt);
+        sessionToken = token;
+
+        const id = await gistCreate(token);
+        localStorage.setItem('woldav_gist_id', id);
+        gistId = id;
+
+        entries = [];
+        showVault();
+        toast('✓ Vault created! Save your token & master password safely.');
+        setSyncStatus('synced', 'New vault ready');
+        renderEntries(entries);
+      } catch(err2) {
+        err.textContent = 'Failed: ' + err2.message;
+      } finally {
+        this.disabled = false; this.textContent = 'Create Vault';
+      }
+    });
+
+    // ══════════════════════════════════════════════
+    //  ADD ENTRY
+    // ══════════════════════════════════════════════
+
+    $('inPass').addEventListener('input', function() {
+      const v = this.value; let s = 0;
+      if (v.length >= 8) s++;
+      if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
+      if (/\d/.test(v)) s++;
+      if (/[^A-Za-z0-9]/.test(v)) s++;
+      const fill = $('strengthFill');
+      fill.style.width    = v ? `${(s/4)*100}%` : '0%';
+      fill.style.background = v ? strengthColor(Math.max(0,s-1)) : '';
+    });
+
+    $('addBtn').addEventListener('click', async function(e) {
+      ripple(this, e);
+      const site = $('inSite').value.trim();
+      const user = $('inUser').value.trim();
+      const pass = $('inPass').value.trim();
+      if (!site || !user || !pass) { toast('⚠ Fill all fields', 'var(--danger)'); return; }
+
+      entries.unshift({ id: Date.now(), site, user, pass });
+      renderEntries(entries);
+      $('inSite').value = ''; $('inUser').value = ''; $('inPass').value = '';
+      $('strengthFill').style.width = '0';
+      toast('✓ Entry saved');
+      await pushVault();
+    });
+
+    // ══════════════════════════════════════════════
+    //  SEARCH
+    // ══════════════════════════════════════════════
+
+    $('searchInput').addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      renderEntries(q ? entries.filter(e =>
+        e.site.toLowerCase().includes(q) || e.user.toLowerCase().includes(q)
+      ) : entries);
+    });
+
+    // ══════════════════════════════════════════════
+    //  SYNC BUTTONS
+    // ══════════════════════════════════════════════
+
+    async function doSync() {
+      await pushVault();
+      await pullVault();
+    }
+
+    $('syncBtn').addEventListener('click', doSync);
+    $('syncNowBtn').addEventListener('click', doSync);
+
+    // Auto-sync every 2 minutes
+    setInterval(() => { if (sessionKey) pushVault(); }, 120000);
+  </script>
+</body>
+</html>
